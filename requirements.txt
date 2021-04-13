@@ -1,0 +1,21 @@
+# Standard Packages
+numpy
+matplotlib
+jupyter
+xgboost
+pandas
+seaborn
+sklearn
+kaggle
+lightgbm
+catboost
+hyperopt
+shap
+meteocalc
+
+# local package
+-e .
+
+# external requirements
+pyyaml
+click

@@ -1,1 +1,9 @@
-data/*
+data/raw/*
+data/processed/*
+data/interim/*
+models/*
+Pipfile*
+energy_prediction.egg-info/
+.ipynb_checkpoints/*
+.idea/*
+*__pycache__/*

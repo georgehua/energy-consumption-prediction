@@ -34,11 +34,8 @@ def main(data_dir, output_filepath):
 
     if cfg["exclude_faulty_rows"]:
         with timer("Exclude faulty data and outliers"):
-            train_df = exclude_faulty_readings(train_df, data_dir + "/external")
-
-    if cfg["add_leaks_to_train"]:
-        with timer("Adding Leak Label to training set"):
-            train_df = add_leaked_data(train_df, test_df)
+            train_df = exclude_faulty_readings(
+                train_df, data_dir + "/external")
 
     with timer("Sort training set"):
         train_df.sort_values("timestamp", inplace=True)
@@ -65,7 +62,8 @@ def build_features(*dfs, cfg):
         dfs = [encode_categorical_data(df) for df in dfs]
 
     with timer("Encoding timestamp features"):
-        dfs = [encode_timestamp(df, circular=cfg["circular_timestamp_encoding"]) for df in dfs]
+        dfs = [encode_timestamp(
+            df, circular=cfg["circular_timestamp_encoding"]) for df in dfs]
 
     with timer("Create area per floor feature"):
         dfs = [calculate_area_per_floor(df) for df in dfs]
@@ -105,7 +103,8 @@ def build_features(*dfs, cfg):
 
     if cfg["add_lag_features"]:
         with timer("Adding Lag Features"):
-            dfs = [add_lag_features(df, cfg["lag_columns"], cfg["lag_windows"]) for df in dfs]
+            dfs = [add_lag_features(
+                df, cfg["lag_columns"], cfg["lag_windows"]) for df in dfs]
 
     return dfs
 
@@ -149,13 +148,20 @@ def encode_timestamp(data_frame, circular=False):
     """
     timestamp = data_frame["timestamp"]
     if circular:
-        timestamp_seconds_of_day = (timestamp.dt.hour * 60 + timestamp.dt.minute) * 60 + timestamp.dt.second
-        data_frame["timeofday_sin"] = np.sin(2 * np.pi * timestamp_seconds_of_day / 86400)
-        data_frame["timeofday_cos"] = np.cos(2 * np.pi * timestamp_seconds_of_day / 86400)
-        data_frame["dayofweek_sin"] = np.sin(2 * np.pi * timestamp.dt.dayofweek / 7)
-        data_frame["dayofweek_cos"] = np.cos(2 * np.pi * timestamp.dt.dayofweek / 7)
-        data_frame["dayofyear_sin"] = np.sin(2 * np.pi * timestamp.dt.dayofyear / 366)
-        data_frame["dayofyear_cos"] = np.cos(2 * np.pi * timestamp.dt.dayofyear / 366)
+        timestamp_seconds_of_day = (
+            timestamp.dt.hour * 60 + timestamp.dt.minute) * 60 + timestamp.dt.second
+        data_frame["timeofday_sin"] = np.sin(
+            2 * np.pi * timestamp_seconds_of_day / 86400)
+        data_frame["timeofday_cos"] = np.cos(
+            2 * np.pi * timestamp_seconds_of_day / 86400)
+        data_frame["dayofweek_sin"] = np.sin(
+            2 * np.pi * timestamp.dt.dayofweek / 7)
+        data_frame["dayofweek_cos"] = np.cos(
+            2 * np.pi * timestamp.dt.dayofweek / 7)
+        data_frame["dayofyear_sin"] = np.sin(
+            2 * np.pi * timestamp.dt.dayofyear / 366)
+        data_frame["dayofyear_cos"] = np.cos(
+            2 * np.pi * timestamp.dt.dayofyear / 366)
     else:
         data_frame["hour"] = pd.Categorical(timestamp.dt.hour)
         data_frame["weekday"] = pd.Categorical(timestamp.dt.dayofweek)
@@ -240,11 +246,16 @@ def encode_wind_direction(data_frame):
     Encode the wind_direction using a cyclic encoding.
     If there is no wind_direction or the wind_speed is zero the points are encoded as the origin.
     """
-    data_frame["wind_direction_sin"] = np.sin(2 * np.pi * data_frame["wind_direction"] / 360)
-    data_frame["wind_direction_cos"] = np.cos(2 * np.pi * data_frame["wind_direction"] / 360)
-    data_frame.loc[data_frame["wind_direction"].isna(), ["wind_direction_sin", "wind_direction_cos"]] = 0
-    data_frame.loc[data_frame["wind_speed"].isna(), ["wind_direction_sin", "wind_direction_cos"]] = 0
-    data_frame.loc[data_frame["wind_speed"] == 0, ["wind_direction_sin", "wind_direction_cos"]] = 0
+    data_frame["wind_direction_sin"] = np.sin(
+        2 * np.pi * data_frame["wind_direction"] / 360)
+    data_frame["wind_direction_cos"] = np.cos(
+        2 * np.pi * data_frame["wind_direction"] / 360)
+    data_frame.loc[data_frame["wind_direction"].isna(
+    ), ["wind_direction_sin", "wind_direction_cos"]] = 0
+    data_frame.loc[data_frame["wind_speed"].isna(
+    ), ["wind_direction_sin", "wind_direction_cos"]] = 0
+    data_frame.loc[data_frame["wind_speed"] == 0, [
+        "wind_direction_sin", "wind_direction_cos"]] = 0
     return data_frame
 
 
@@ -267,8 +278,10 @@ def calculate_row_relative_humidity(air_temperature, dew_temperature):
     positive = {'b': 17.368, 'c': 238.88}
     negative = {'b': 17.966, 'c': 247.15}
     const = positive if air_temperature > 0 else negative
-    pa = math.exp(dew_temperature * const['b'] / (const['c'] + dew_temperature))
-    rel_humidity = pa * 100. * 1 / math.exp(const['b'] * air_temperature / (const['c'] + air_temperature))
+    pa = math.exp(dew_temperature *
+                  const['b'] / (const['c'] + dew_temperature))
+    rel_humidity = pa * 100. * 1 / \
+        math.exp(const['b'] * air_temperature / (const['c'] + air_temperature))
     return rel_humidity
 
 
@@ -278,10 +291,12 @@ def calculate_feels_like_temp(df):
     :param df: weather data frame.
     :return: Dataframe with added feature
     """
-    subset = df[["air_temperature", "wind_speed", "relative_humidity"]].drop_duplicates()
+    subset = df[["air_temperature", "wind_speed",
+                 "relative_humidity"]].drop_duplicates()
     subset["air_temp_f"] = subset["air_temperature"] * 9 / 5 + 32
     subset["feels_like_temp"] = subset.apply(
-        lambda row: calculate_row_feels_like_temp(row["air_temperature"], row["wind_speed"], row["relative_humidity"]),
+        lambda row: calculate_row_feels_like_temp(
+            row["air_temperature"], row["wind_speed"], row["relative_humidity"]),
         axis=1)
     return df.merge(subset, on=["air_temperature", "wind_speed", "relative_humidity"])
 
@@ -298,26 +313,6 @@ def calculate_row_feels_like_temp(air_temperature, wind_speed, relative_humidity
     fl = feels_like(air_temperature_fahrenheit, wind_speed, relative_humidity)
     out = fl.c
     return out
-
-
-def add_leaked_data(train_df, test_df):
-    """
-    Adds the leaked data published in public notebooks in Kaggle's website
-    :param train_df:
-    :param test_df:
-    :return: concatenated dataframe
-    """
-    leaked_df = pd.read_feather("data/leak/leak.feather")
-    leaked_df.loc[leaked_df["meter_reading"] < 0, "meter_reading"] = 0
-    leaked_df = leaked_df[leaked_df["building_id"] != 245]
-
-    test_leak_df = test_df.copy(deep=True)
-    test_leak_df = test_leak_df.merge(leaked_df, left_on=["building_id", "meter", "timestamp"],
-                                      right_on=["building_id", "meter", "timestamp"], how="left")
-    test_leak_df.dropna(subset=["meter_reading"], inplace=True)
-    del test_leak_df["row_id"]
-
-    return pd.concat([train_df, test_leak_df], sort=False)
 
 
 def save_processed_data(output_filepath, train_df, test_df):

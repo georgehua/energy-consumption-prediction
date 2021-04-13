@@ -20,7 +20,8 @@ def train_lgbm_model(mode, input_filepath, output_filepath, cfg):
     :param cfg: Config read from src/config.yml.
     """
     with timer("Loading processed training data"):
-        train_df, label = load_processed_training_data(input_filepath, cfg["columns"])
+        train_df, label = load_processed_training_data(
+            input_filepath, cfg["columns"])
 
     params = cfg["lgbm_params"]
     num_boost_round = cfg["lgbm_num_boost_round"]
@@ -140,10 +141,11 @@ def start_full_by_building_run(train_df, label, params, splits, verbose_eval,
         train_by_building = train_df.get_group(b)
         train_by_building = train_by_building.reset_index(drop=True)
         label = train_by_building["label"]
-        train_by_building = train_by_building.drop(columns=["building_id", "label"], axis=1)
-        with timer("Performing " + str(splits) + " fold cross-validation on building " \
+        train_by_building = train_by_building.drop(
+            columns=["building_id", "label"], axis=1)
+        with timer("Performing " + str(splits) + " fold cross-validation on building "
                    + str(b)):
-            kf = KFold(n_splits=splits, shuffle=False, random_state=1337)
+            kf = KFold(n_splits=splits, shuffle=False)
             for i, (train_index, test_index) in enumerate(kf.split(train_by_building, label)):
                 with timer("~~~~ Fold %d of %d ~~~~" % (i + 1, splits)):
                     x_train, x_valid = train_by_building.iloc[train_index], train_by_building.iloc[test_index]
@@ -196,8 +198,8 @@ def start_cv_run(train_df, label, params, splits, verbose_eval,
                 "it is needed for specifying the folds only and will be dropped afterwards.")
         output_filepath = output_filepath + "grouped_cv"
         is_meter0 = (train_df.meter == 0).values
-        train_df = train_df.iloc[is_meter0,]
-        label = label.iloc[is_meter0,]
+        train_df = train_df.iloc[is_meter0, ]
+        label = label.iloc[is_meter0, ]
         train_df = train_df.reset_index(drop=True)
         groups = train_df.building_id
         train_df = train_df.drop(columns='building_id')
@@ -205,7 +207,7 @@ def start_cv_run(train_df, label, params, splits, verbose_eval,
         indices = gkf.split(train_df, label, groups)
     else:
         output_filepath = output_filepath + "_cv"
-        kf = KFold(n_splits=splits, shuffle=False, random_state=1337)
+        kf = KFold(n_splits=splits, shuffle=False)
         indices = kf.split(train_df, label)
     cv_results = []
     with timer("Performing " + str(splits) + " fold cross-validation"):
@@ -263,15 +265,18 @@ def evaluate_cv_results(cv_results):
     click.echo("Fold summary (Loss):")
     for i, metrics in enumerate(cv_results):
         eval_loss = float([x[-1] for x in list(metrics["eval"].values())][0])
-        train_loss = float([x[-1] for x in list(metrics["train_loss"].values())][0])
-        print("{0}|\tEval:\t{1:.3f}\t|\ttrain:\t{2:.3f}".format(i, eval_loss, train_loss))
+        train_loss = float([x[-1]
+                            for x in list(metrics["train_loss"].values())][0])
+        print("{0}|\tEval:\t{1:.3f}\t|\ttrain:\t{2:.3f}".format(
+            i, eval_loss, train_loss))
         summary["fold"].append(i)
         summary["eval_loss"].append(eval_loss)
         summary["train_loss"].append(train_loss)
 
     avg_eval_loss = sum(summary["eval_loss"]) / len(summary["eval_loss"])
     avg_train_loss = sum(summary["train_loss"]) / len(summary["train_loss"])
-    print("Average Eval Loss:\t{0:.3f}\nAverage Train Loss:\t{1:.3f}".format(avg_eval_loss, avg_train_loss))
+    print("Average Eval Loss:\t{0:.3f}\nAverage Train Loss:\t{1:.3f}".format(
+        avg_eval_loss, avg_train_loss))
 
     summary = pd.DataFrame.from_dict(summary)
     csv_path = "models/cv_eval"

@@ -47,7 +47,7 @@ def main():
         train_df = lgb.Dataset(train_df, label)
 
     def objective_function(params):
-        kf = KFold(n_splits=splits, shuffle=False, random_state=1337)
+        kf = KFold(n_splits=splits, shuffle=False)
         final_params = dict(params, **params_static)
         cv_results = lgb.cv(final_params,
                             train_df,
@@ -93,7 +93,7 @@ def load_processed_training_data(input_filepath):
     label = np.log1p(train_df["meter_reading"])
     del train_df["meter_reading"]
 
-    return train_df, label
+    return train_df.drop(["timestamp", "timezone", "country_code", "location"], axis=1), label
 
 
 if __name__ == '__main__':
