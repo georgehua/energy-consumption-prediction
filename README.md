@@ -1,10 +1,22 @@
 # Energy Consumption Prediction
 
+## About the Project
 
-## The Dataset
+This project comes from the Kaggle competition [ASHRAE Energy Prediction](https://www.kaggle.com/c/ashrae-energy-prediction). The goal of this project is straightfoward - How much energy will a building consume?
+
+From the publication <i>More Buildings Make More Generalizable Models—Benchmarking Prediction Methods on Open Electrical Meter Data</i>. Clayton Millor pointed out "A period of baseline energy consumption is used to create a machine learning prediction model to evaluate how much energy a building would use in a status quo baseline mode. An energy conservation measure (ECM) is installed and the difference between the baseline is the avoided energy consumption or demand. This process is crucial for the implementation of energy savings implementations as it gives building owners, designers and contractors a means of evaluating the success of such measures."
+
+<img src="docs/figures/prediction_goal_explanation.png">
+
+For this project the host provided the 2016 electricity used data for more than 1000 building across the world, and ask competitors to predict the next two year's meter readings. Then the host is able to obtain best modeling solutions that can be used to predict future savings of the energy after ECM installation.
+
+This project is meaningful because With better estimates of these energy-saving investments, large scale investors and financial institutions will be more inclined to invest in this area to enable progress in building efficiencies.
+
 ---------------
 
-The provided data consists of ~20 mio. rows for training (one year timespan) and ~40 mio. rows for testing (two years timespan). The target variable are the hourly readings from one of four meters {0: electricity, 1: chilledwater, 2: steam, hotwater: 3}. For building the model the data provides following features out of the box:
+## The Dataset
+
+The provided data consists of ~20 millions. rows for training (one year timespan) and ~40 mio. rows for testing (two years timespan). The target variable are the hourly readings from one of four meters {0: electricity, 1: chilledwater, 2: steam, hotwater: 3}. For building the model the data provides following features out of the box:
 
 
 - building_id --> Foreign key for the building metadata.
@@ -18,22 +30,31 @@ The provided data consists of ~20 mio. rows for training (one year timespan) and
 
 Further weather data has been provided, which comes with air_temperature, cloud_coverage, dew_temperature, precip_depth_1_hr, sea_level_pressure, wind_direction and wind_speed.
 
-Exploratory Data Analysis
+**Exploratory Data Analysis**
 
 Profiling for each data file:
 
-- building_metadata
-- train
-- weather
+- [building_meta.csv profiles](https://georgehua.github.io/energy-consumption-prediction/building_metadata_profile.html)
+- [train.csv profiles](https://georgehua.github.io/energy-consumption-prediction/trainset_profile.html)
+- [weather_train.csv profiles](https://georgehua.github.io/energy-consumption-prediction/weather_train_profile.html)
 
-In-depth analysis (missing data, outliers, time-series trend, correlation)
+[In-depth analysis: ](https://georgehua.github.io/energy-consumption-prediction/EDA.html)
+ - Checking missing data
+ - Identifying outliers
+ - Observing time-series trend
+ - Finding correlation
 
-
-
-Installation
 ---------------
 
-This project run on python >= 3.6
+## Walk Through the Project
+
+The the project follows the standard workflow of machine learning project:
+- Data Preparation
+- Feature Engineering
+- Model Training & Hyperparameter Tuning
+- Prediction & Evaluation
+
+Note: This project run on python >= 3.6
 
 1. **Install Dependencies**
 
@@ -69,7 +90,8 @@ This project run on python >= 3.6
 
    `preproc.py` will create a clean dataframe for analysis. This script includes: 
    - Load all associated `.csv`-files
-   - Localize timestamps based on building location. 
+   - Timestamps alignment based on building location. 
+        - The original time is in UTC, we need to align them to their local time because time of the day is crucial to predict energy consumption (consider lightening, heating, etc.)
    - Iterative imputation for missing values in weather data. 
    - Join all dataframes and save compressed results in `data/interim`
 
@@ -131,18 +153,94 @@ This project run on python >= 3.6
    Note: This step is time-consuming and requires large RAM space.
    
 
-6. **Make Predictions**
+7. **Make Predictions**
 
    ```
-    python src/models/predict_model.py data/processed <MODEL> <MODEL_PATH> submissions/submission.csv
+    python src/models/predict_model.py data/processed <MODEL_NAME> <MODEL_PATH> submissions/submission.csv
 
     # Example:
     python src/models/predict_model.py data/processed lgbm models/lgbm_cv/ submissions/submission.csv
     ```
-   The easiest way is to use `make predict MODEL_PATH=<modelpath> MODEL=<model>` where `MODEL_PATH` should point to the directory of the saved models or the model itself. The `MODEL` parameter describes the framework of the model equivalent to the step above. The result is a `.csv` file, which is dumped in the `submission` directory and is ready for uploading to Kaggle. An importen flag is whether to use leaks or not as it heavily influences the resulting submission file.
+   Note: the testing set contains 40 missions rows, and requires large memory space to process.
+   
+   The result is a `.csv` file, which is dumped in the `submission` directory and is ready for uploading to Kaggle.
+
+   - `MODEL_NAME` : 
+        - lgbm (LightGBM)
+        - ctb (CatBoost)
+        - xgb (XGBoost)
+   - `MODEL_PATH`: the directory of the saved models or the model itself.
 
 
-Note: Data Leaks
+8. **Evaluation & Prediction**
+
+The RMSE score on test set is 1.278, and I consider the result is satisfied (the winner is 1.231, so my solution is 3.8% less accuate than the top solution). There might be some reasons that out of my control:
+- The test set is seperated into public board and private board, and scoring competitors seperately. But there might be bias during the seperation process.
+- I didn't use leaked building
+
+Sample predictions for building No.168
+<img src="docs/figures/168_electricity.png">
+<img src="docs/figures/168_chilledwater.png">
+<img src="docs/figures/168_hotwater.png">
+
+<img src="docs/figures/shap_values.png">
+
 ------------
 
-Unfortunately a portion of the test labels have been leaked, which stirred the whole competition. If you want to use the leaks for your own experiments, you have the set the respective flags in the config file. Additionally the leaks have to be downloaded from [here](https://www.kaggle.com/yamsam/ashrae-leak-data-station) and be placed in `./data/leaks`.
+## Data Leaks
+
+
+Unfortunately a portion of the test labels have been leaked, which stirred the whole competition. Someone located the building in the real world and pulled the actually electricity readings to include in their submission file. And almost all the top winner's solution used the leaked data. I didn't use the leaked data in my project.
+
+
+------------
+
+## Project Structure
+
+
+
+    ├── README.md          <- The top-level README for developers using this project.
+    ├── data
+    │   ├── external       <- Data from third party sources.
+    │   ├── interim        <- Intermediate data that has been transformed.
+    │   ├── processed      <- The final, canonical data sets for modeling.
+    │   └── raw            <- The original, immutable data dump.
+    │
+    ├── docs               <- Github Pages documents & figures
+    │
+    ├── models             <- Trained and serialized models, model predictions, or model summaries
+    │
+    ├── notebooks          <- Jupyter notebooks for EDA and experiments
+    │
+    ├── requirements.txt   <- The requirements file for reproducing the analysis environment, e.g.
+    │                         generated with `pip freeze > requirements.txt`
+    │
+    ├── setup.py           <- makes project pip installable (pip install -e .) so src can be imported
+    ├── src                <- Source code for use in this project.
+    │   ├── __init__.py    <- Makes src a Python module
+    │   │
+    │   ├── data           <- Scripts to download or generate data
+    │   │   └── preproc.py
+    │   │
+    │   ├── features       <- Scripts to turn raw data into features for modeling
+    │   │   └── build_features.py
+    │   │
+    │   ├── models         <- Scripts to train models and then use trained models to make
+    │   │   │                 predictions
+    │   │   ├── predict_model.py
+    │   │   └── train_lgbm_model.py
+    │   │   └── train_ctb_model.py
+    |   │   └── train_xgb_model.py
+    │   │   └── find_hyperparameter_lgbm.py
+    │   │
+    │   └── visualization  <- Scripts to create exploratory and results oriented visualizations
+
+
+------------
+
+## References
+
+
+https://www.kaggle.com/caesarlupum/ashrae-start-here-a-gentle-introduction#Model-in-%E2%9A%A1%F0%9F%94%8CASHRAE-:-Lgbm-Simple-FE
+
+https://www.mdpi.com/2504-4990/1/3/56
