@@ -174,9 +174,9 @@ Note: This project run on python >= 3.6
 
 8. **Evaluation & Prediction**
 
-The RMSE score on test set is 1.278, and I consider the result is satisfied (the winner is 1.231, so my solution is 3.8% less accuate than the top solution). There might be some reasons that out of my control:
-- The test set is seperated into public board and private board, and scoring competitors seperately. But there might be bias during the seperation process.
-- I didn't use leaked building
+The RMSE score on test set is 1.278, and I consider the result as a success (the winner is 1.231, so my solution is 3.8% less accuate than the top solution). There might be some factors influence the results that out of my control:
+- The test set is seperated into public and private score board (a convention of the Kaggle competition), and scoring participatants seperately. But there might be bias during the seperation process.
+- I didn't use leaked buildings, but many participants did.
 
 **Sample predictions for building No.168**
 <img src="docs/figures/168_electricity.png">
