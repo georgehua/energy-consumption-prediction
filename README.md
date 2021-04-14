@@ -178,12 +178,24 @@ The RMSE score on test set is 1.278, and I consider the result is satisfied (the
 - The test set is seperated into public board and private board, and scoring competitors seperately. But there might be bias during the seperation process.
 - I didn't use leaked building
 
-Sample predictions for building No.168
+**Sample predictions for building No.168**
 <img src="docs/figures/168_electricity.png">
 <img src="docs/figures/168_chilledwater.png">
 <img src="docs/figures/168_hotwater.png">
 
+**Shapley Values Plot**
+
+This shows the Shap values on the x-axis. Here, all the values on the left represent the observations that shift the predicted value in the negative direction while the points on the right contribute to shifting the prediction in a positive direction. All the features are on the left y-axis.
+
+So here, high square feet values are on the right side primarily because they contribute positively to the meter readings.
+
 <img src="docs/figures/shap_values.png">
+
+**LightGBM Feature Importance**
+
+The plot uses LightGBM to calculate feature importance and have the similar functionality to Shapley values.
+
+<img src="docs/figures/lgbm_feature_importance.png">
 
 ------------
 
