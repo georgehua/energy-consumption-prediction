@@ -10,7 +10,7 @@ From the publication <i>More Buildings Make More Generalizable Models—Benchmar
 
 For this project the host provided the 2016 electricity used data for more than 1000 building across the world, and ask competitors to predict the next two year's meter readings. Then the host is able to obtain best modeling solutions that can be used to predict future savings of the energy after ECM installation.
 
-This project is meaningful because With better estimates of these energy-saving investments, large scale investors and financial institutions will be more inclined to invest in this area to enable progress in building efficiencies.
+This project is meaningful because with better estimates of these energy-saving investments, large scale investors and financial institutions will be more inclined to invest in this area to enable progress in building efficiencies.
 
 ---------------
 
@@ -161,7 +161,7 @@ Note: This project run on python >= 3.6
     # Example:
     python src/models/predict_model.py data/processed lgbm models/lgbm_cv/ submissions/submission.csv
     ```
-   Note: the testing set contains 40 missions rows, and requires large memory space to process.
+   Note: the testing set contains 40 millions rows, and requires large memory space to process.
    
    The result is a `.csv` file, which is dumped in the `submission` directory and is ready for uploading to Kaggle.
 
@@ -176,7 +176,7 @@ Note: This project run on python >= 3.6
 
 The RMSE score on test set is 1.278, and I consider the result as a success (the winner is 1.231, so my solution is 3.8% less accuate than the top solution). There might be some factors influence the results that out of my control:
 - The test set is seperated into public and private score board (a convention of the Kaggle competition), and scoring participatants seperately. But there might be bias during the seperation process.
-- I didn't use leaked buildings, but many participants did.
+- I didn't use leaked buildings data, but many participants did.
 
 **Sample predictions for building No.168**
 <img src="docs/figures/168_electricity.png">
@@ -202,7 +202,7 @@ The plot uses LightGBM to calculate feature importance and have the similar func
 ## Data Leaks
 
 
-Unfortunately a portion of the test labels have been leaked, which stirred the whole competition. Someone located the building in the real world and pulled the actually electricity readings to include in their submission file. And almost all the top winner's solution used the leaked data. I didn't use the leaked data in my project.
+Unfortunately a portion of the test labels have been leaked, which stirred the whole competition. Someone located the building in the real world and pulled the actually electricity readings to include in their submission file. And almost all the top winner's solution used the leaked data.
 
 
 ------------
