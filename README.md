@@ -1,6 +1,51 @@
 # Energy Consumption Prediction
 
-## About the Project
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+Table of Content:
+
+
+- [1. Executive Summary](#1-executive-summary)
+- [2. About the Project](#2-about-the-project)
+- [3. The Dataset](#3-the-dataset)
+  - [3.1. Exploratory Data Analysis](#31-exploratory-data-analysis)
+- [4. Walk Through the Project](#4-walk-through-the-project)
+  - [4.1. Install Dependencies](#41-install-dependencies)
+  - [4.2. The Dataset](#42-the-dataset)
+  - [4.3. Data Cleaning and Preprocessing](#43-data-cleaning-and-preprocessing)
+  - [4.4. Feature Engineering](#44-feature-engineering)
+  - [4.5. Build Models](#45-build-models)
+  - [4.6. Hyperparameter Tuning](#46-hyperparameter-tuning)
+  - [4.7. Make Predictions](#47-make-predictions)
+  - [4.8. Evaluation & Prediction](#48-evaluation--prediction)
+- [5. Data Leaks](#5-data-leaks)
+- [6.Project Structure](#6project-structure)
+- [7. References](#7-references)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+
+
+## 1. Executive Summary
+
+**Goal:**
+
+To predict 2 years (2017-2018, 40 mio~ rows) of electricity usage with 1 year (2016, 20 mio~ rows) of data for training. The evaluation metrics is RMSE.
+
+**Results:** 
+
+LightGBM achieved the lowest RMSE (1.278), about 3.8% less accurate the Kaggle topic winner solution (1.231). Example prediction results for building No. 168 as below:
+
+<img src="docs/figures/168_electricity.png">
+
+<img src="docs/figures/168_chilledwater.png">
+
+<img src="docs/figures/168_hotwater.png">
+
+
+
+## 2. About the Project
 
 This project comes from the Kaggle competition [ASHRAE Energy Prediction](https://www.kaggle.com/c/ashrae-energy-prediction). The goal of this project is straightfoward - How much energy will a building consume?
 
@@ -12,9 +57,9 @@ For this project the host provided the 2016 electricity used data for more than 
 
 This project is meaningful because with better estimates of these energy-saving investments, large scale investors and financial institutions will be more inclined to invest in this area to enable progress in building efficiencies.
 
----------------
 
-## The Dataset
+
+## 3. The Dataset
 
 The provided data consists of ~20 millions. rows for training (one year timespan) and ~40 mio. rows for testing (two years timespan). The target variable are the hourly readings from one of four meters {0: electricity, 1: chilledwater, 2: steam, hotwater: 3}. For building the model the data provides following features out of the box:
 
@@ -30,7 +75,9 @@ The provided data consists of ~20 millions. rows for training (one year timespan
 
 Further weather data has been provided, which comes with air_temperature, cloud_coverage, dew_temperature, precip_depth_1_hr, sea_level_pressure, wind_direction and wind_speed.
 
-**Exploratory Data Analysis**
+
+
+### 3.1. Exploratory Data Analysis
 
 Profiling for each data file:
 
@@ -44,9 +91,9 @@ Profiling for each data file:
  - Observing time-series trend
  - Finding correlation
 
----------------
 
-## Walk Through the Project
+
+## 4. Walk Through the Project
 
 The the project follows the standard workflow of machine learning project:
 - Data Preparation
@@ -56,24 +103,28 @@ The the project follows the standard workflow of machine learning project:
 
 Note: This project run on python >= 3.6
 
-1. **Install Dependencies**
+
+
+### 4.1. Install Dependencies
 
     ```
     # 1. Clone the project
     git clone https://github.com/georgehua/energy-consumption-prediction.git
-
+    
     # 2. Install project dependencies
     
     # It's recommended to create a virtual environment first, a good option is to use pipenv package
     pip install pipenv
     pipenv shell
     pipenv install -r requirements.txt
-
+    
     # Or you can install everything gloabally
     pip install requirements.txt
     ```
 
-2. **The Dataset**
+
+
+### 4.2. The Dataset
 
    The raw data has to be placed in `data/raw`. A good practice is to download the data via the Kaggle CLI.
     ```
@@ -82,7 +133,9 @@ Note: This project run on python >= 3.6
     unzip ashrae-energy-prediction.zip -d data/raw
     ```
 
-3. **Data Cleaning and Preprocessing**
+
+
+### 4.3. Data Cleaning and Preprocessing
 
     ```
     python src/data/preproc.py data data/interim
@@ -96,7 +149,8 @@ Note: This project run on python >= 3.6
    - Join all dataframes and save compressed results in `data/interim`
 
 
-4. **Feature Engineering**
+
+### 4.4. Feature Engineering
 
     ```
     python src/features/build_features.py data data/processed
@@ -124,7 +178,7 @@ Note: This project run on python >= 3.6
 
 
 
-5. **Build Models**
+### 4.5. Build Models
 
     ```
     python src/models/train_model.py <MODEL_NAME> <MODE> data/processed models/<MODEL_NAME>
@@ -142,27 +196,29 @@ Note: This project run on python >= 3.6
         - full (no validation set, single fold)
         - by_meter (training by meter type)
         - by_building (training by building id)
-    
 
-6. **Hyperparameter Tuning**
-   
+
+
+### 4.6. Hyperparameter Tuning
+
    ```
     python src/models/find_hyperparameter_lgbm.py
-    ```
-   For tuning hyperparameter, I used bayesian optimization to reduce the time spent on traditional grid-search or random-search.
+   ```
+   For tuning hyperparameter, I used Bayesian optimization to reduce the time spent on traditional grid-search or random-search.
    Note: This step is time-consuming and requires large RAM space.
-   
 
-7. **Make Predictions**
+
+
+### 4.7. Make Predictions
 
    ```
     python src/models/predict_model.py data/processed <MODEL_NAME> <MODEL_PATH> submissions/submission.csv
-
+   
     # Example:
     python src/models/predict_model.py data/processed lgbm models/lgbm_cv/ submissions/submission.csv
-    ```
+   ```
    Note: the testing set contains 40 millions rows, and requires large memory space to process.
-   
+
    The result is a `.csv` file, which is dumped in the `submission` directory and is ready for uploading to Kaggle.
 
    - `MODEL_NAME` : 
@@ -172,16 +228,21 @@ Note: This project run on python >= 3.6
    - `MODEL_PATH`: the directory of the saved models or the model itself.
 
 
-8. **Evaluation & Prediction**
 
-The RMSE score on test set is 1.278, and I consider the result as a success (the winner is 1.231, so my solution is 3.8% less accuate than the top solution). There might be some factors influence the results that out of my control:
-- The test set is seperated into public and private score board (a convention of the Kaggle competition), and scoring participatants seperately. But there might be bias during the seperation process.
+### 4.8. Evaluation & Prediction
+
+The RMSE score on test set is 1.278, and I consider the result as a success (the winner is 1.231, so my solution is 3.8% less accurate than the top solution). There might be some factors influence the results that out of my control:
+- The test set is separated into public and private score board (a convention of the Kaggle competition), and scoring participants separately. But there might be bias during the separation process.
 - I didn't use leaked buildings data, but many participants did.
+
+
 
 **Sample predictions for building No.168**
 <img src="docs/figures/168_electricity.png">
 <img src="docs/figures/168_chilledwater.png">
 <img src="docs/figures/168_hotwater.png">
+
+
 
 **Shapley Values Plot**
 
@@ -197,17 +258,16 @@ The plot uses LightGBM to calculate feature importance and have the similar func
 
 <img src="docs/figures/lgbm_feature_importance.png">
 
-------------
 
-## Data Leaks
+
+## 5. Data Leaks
 
 
 Unfortunately a portion of the test labels have been leaked, which stirred the whole competition. Someone located the building in the real world and pulled the actually electricity readings to include in their submission file. And almost all the top winner's solution used the leaked data.
 
 
-------------
 
-## Project Structure
+## 6.Project Structure
 
 
 
@@ -248,9 +308,8 @@ Unfortunately a portion of the test labels have been leaked, which stirred the w
     │   └── visualization  <- Scripts to create exploratory and results oriented visualizations
 
 
-------------
 
-## References
+## 7. References
 
 
 https://www.kaggle.com/caesarlupum/ashrae-start-here-a-gentle-introduction#Model-in-%E2%9A%A1%F0%9F%94%8CASHRAE-:-Lgbm-Simple-FE
