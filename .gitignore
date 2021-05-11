@@ -4,6 +4,6 @@ data/interim/*
 models/*
 Pipfile*
 energy_prediction.egg-info/
-.ipynb_checkpoints/*
+.ipynb_checkpoints
 .idea/*
 *__pycache__/*

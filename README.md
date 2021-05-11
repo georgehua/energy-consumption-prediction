@@ -311,7 +311,7 @@ Unfortunately a portion of the test labels have been leaked, which stirred the w
 
 ## 7. References
 
+[Python notebook using data from ASHRAE - Great Energy Predictor III, ASHRAE -Start Here: A GENTLE Introduction](https://www.kaggle.com/caesarlupum/ashrae-start-here-a-gentle-introduction#Model-in-%E2%9A%A1%F0%9F%94%8CASHRAE-:-Lgbm-Simple-FE)
 
-https://www.kaggle.com/caesarlupum/ashrae-start-here-a-gentle-introduction#Model-in-%E2%9A%A1%F0%9F%94%8CASHRAE-:-Lgbm-Simple-FE
+[Miller, C. More Buildings Make More Generalizable Models—Benchmarking Prediction Methods on Open Electrical Meter Data. *Mach. Learn. Knowl. Extr.* **2019**, *1*, 974-993. https://doi.org/10.3390/make1030056](https://www.mdpi.com/2504-4990/1/3/56)
 
-https://www.mdpi.com/2504-4990/1/3/56
